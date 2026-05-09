@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>ATS Resume Insights with AI</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.min.js"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #000; 
+            color: #eee; 
+            background-image:
+                radial-gradient(1px 1px at 20px 30px, #fff, transparent),
+                radial-gradient(1px 1px at 40px 70px, #fff, transparent),
+                radial-gradient(1px 1px at 50px 160px, #ddd, transparent),
+                radial-gradient(1px 1px at 90px 40px, #fff, transparent),
+                radial-gradient(2px 2px at 130px 80px, #fff, transparent),
+                radial-gradient(1px 1px at 160px 120px, #ddd, transparent),
+                radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+                radial-gradient(1px 1px at 40% 70%, #fff, transparent),
+                radial-gradient(2px 2px at 50% 60%, #ddd, transparent),
+                radial-gradient(1px 1px at 90% 40%, #fff, transparent),
+                radial-gradient(1px 1px at 80% 80%, #fff, transparent),
+                radial-gradient(2px 2px at 15% 90%, #ddd, transparent),
+                radial-gradient(1px 1px at 60% 10%, #fff, transparent),
+                radial-gradient(2px 2px at 30% 45%, #ddd, transparent);
+            background-size: 200px 200px;
+            background-position: 0 0;
+        }
+
+        header {
+            text-align: center;
+            padding: 2rem 0;
+            background-color: #1a1a2e;
+            color: #fff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); 
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 2.5rem;
+        }
+
+        
+        p {
+            font-size: 1.2rem;
+            margin: 0.5rem 0;
+            color: #ccc; 
+        }
+
+        
+        header p {
+            color: #fff;
+        }
+
+        .container {
+            display: flex;
+            justify-content: center;
+            padding: 2rem;
+            flex-wrap: wrap;
+            gap: 2rem;
+        }
+
+        .card {
+            background-color: rgba(40, 40, 70, 0.7);
+            backdrop-filter: blur(8px); 
+            padding: 2rem;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.15); 
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4); 
+            width: 100%;
+            max-width: 600px;
+            margin-top: 2rem;
+            color: #fff; 
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #e0e0e0; 
+        }
+
+        input[type="file"],
+        textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1px solid #555; 
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: rgba(0, 0, 0, 0.4); 
+            color: #fff; /* Input text color */
+            box-sizing: border-box;
+        }
+
+        input[type="file"]::file-selector-button {
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            padding: 0.8rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px; 
+            transition: background-color 0.3s ease;
+        }
+        input[type="file"]::file-selector-button:hover {
+            background-color: #357ABD;
+        }
+
+
+        textarea {
+            height: 150px;
+            resize: vertical;
+        }
+
+        textarea::placeholder {
+            color: #999; 
+        }
+
+        button {
+            background-color: #4A90E2;
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 4px;
+            width: 100%;
+            margin-top: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #357ABD;
+        }
+
+        .loader {
+            text-align: center;
+            display: none;
+            font-size: 1.5rem;
+            color: #4A90E2; 
+            margin-top: 1rem;
+        }
+
+        .analysis-results {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: #fff; 
+        }
+        .analysis-results p,
+        .analysis-results div { 
+             color: #fff;
+             line-height: 1.6;
+        }
+        .analysis-results strong {
+            color: #FACC15; 
+        }
+
+
+        .feature-list {
+            margin-top: 3rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .feature-list h2 {
+            color: #fff; 
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .feature-list ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        .feature-list li {
+            position: relative;
+            padding-left: 35px;
+            margin-bottom: 1.2rem; 
+            font-size: 1.1rem;
+            color: #ddd; 
+            line-height: 1.5;
+        }
+
+        .feature-list li::before {
+            content: "★";
+            color: #FACC15; 
+            font-size: 1.8rem;
+            position: absolute;
+            left: 0;
+            top: -2px; /* Adjust vertical alignment */
+            animation: glow 1.5s infinite ease-in-out;
+        }
+        .feature-list li strong { 
+            color: #fff;
+        }
+
+
+        /* Glowing animation */
+        @keyframes glow {
+            0% {
+                text-shadow: 0 0 5px #FACC15, 0 0 10px #FACC15, 0 0 15px #FACC15, 0 0 20px #FACC15;
+            }
+            50% {
+                text-shadow: 0 0 10px #FACC15, 0 0 20px #FACC15, 0 0 30px #FACC15, 0 0 40px #FACC15;
+            }
+            100% {
+                text-shadow: 0 0 5px #FACC15, 0 0 10px #FACC15, 0 0 15px #FACC15, 0 0 20px #FACC15;
+            }
+        }
+
+        footer {
+            text-align: center;
+            background-color: #1a1a2e; 
+            padding: 1.5rem;
+            margin-top: 3rem;
+
+        footer a {
+            color: #fff;
+            text-decoration: none;
+            margin: 0 1rem;
+            font-weight: 600;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .card {
+                padding: 1.5rem;
+            }
+
+            .feature-list {
+                width: 100%;
+                padding: 0 1rem; 
+            }
+            .feature-list h2 {
+                font-size: 1.8rem;
+            }
+             .feature-list li {
+                padding-left: 30px; 
+            }
+            .feature-list li::before {
+                font-size: 1.5rem;
+            }
+
+
+            button {
+                width: 100%;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+            p {
+                font-size: 1rem;
+            }
+
+        }
+
+       
+        @media (min-width: 769px) {
+            .card {
+                max-width: 700px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>ATS Resume Insights with AI</h1>
+        <p>Optimize your resume with AI-powered feedback for better ATS compatibility.</p>
+    </header>
+
+    <div class="container">
+        <div class="card">
+            <div class="form-group">
+                <label for="resume-pdf">Upload Resume (PDF only)</label>
+                <input type="file" id="resume-pdf" accept="application/pdf">
+            </div>
+
+            <div class="form-group">
+                <label for="job-desc">Paste Job Description</label>
+                <textarea id="job-desc" placeholder="Paste the job description here..."></textarea>
+            </div>
+
+            <button onclick="processPDF()">Analyze Resume</button>
+            <div class="loader" id="loader">Analyzing...</div>
+
+            <div class="analysis-results" id="analysis-results" style="display: none;">
+                <div id="score-result"></div>
+                <div id="ai-suggestions"></div>
+            </div>
+        </div>
+
+        <div class="feature-list">
+            <h2>Key Features:</h2>
+            <ul>
+                <li><strong>AI-Powered Insights:</strong> Get personalized recommendations to optimize your resume.</li>
+                <li><strong>ATS Compatibility Score:</strong> Understand how well your resume aligns with the job description.</li>
+                <li><strong>Keyword Analysis:</strong> Identify crucial keywords you might be missing.</li>
+                <li><strong>Actionable Suggestions:</strong> Get specific tips to improve your resume's content based on the job description.</li>
+                <li><strong>User-Friendly Interface:</strong> Simple and intuitive design for easy use.</li>
+                <li><strong>Privacy Focused:</strong> Your data stays secure within your browser.</li>
+            </ul>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2025 ATS Resume Insights with AI</p>
+        <p>
+            <a href="#">About</a> |
+            <a href="#">Privacy</a> |
+            <a href="#">Contact</a> |
+            <a href="https://github.com/your-repo" target="_blank">GitHub</a>
+        </p>
+    </footer>
+
+    <script>
+        async function processPDF() {
+            const fileInput = document.getElementById("resume-pdf");
+            const jobDesc = document.getElementById("job-desc").value.toLowerCase();
+            const loader = document.getElementById("loader");
+            const analysisResults = document.getElementById("analysis-results");
+            const resultDiv = document.getElementById("score-result"); 
+            const aiSuggestionsDiv = document.getElementById("ai-suggestions");
+
+            resultDiv.innerHTML = '';
+            aiSuggestionsDiv.innerHTML = '';
+            analysisResults.style.display = 'none';
+            loader.style.display = 'block';
+
+            if (!fileInput.files.length || !jobDesc.trim()) {
+                alert("Please upload a PDF and paste the job description.");
+                loader.style.display = 'none';
+                return;
+            }
+
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+
+            reader.onload = async function () {
+                try {
+                    const typedArray = new Uint8Array(this.result); 
+                    
+                    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.10.377/pdf.worker.min.js';
+                    const pdf = await pdfjsLib.getDocument({ data: typedArray }).promise;
+
+                    let textContent = '';
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const page = await pdf.getPage(i);
+                        const content = await page.getTextContent();
+                        const pageText = content.items.map(item => item.str).join(' ');
+                        textContent += pageText + ' ';
+                    }
+
+                    calculateATSScore(textContent, jobDesc);
+                    analysisResults.style.display = 'block';
+                } catch (error) {
+                    console.error("Error reading PDF:", error);
+                    alert("Failed to read the PDF. Please ensure it's a valid PDF file and the PDF.js worker is correctly configured if errors persist.");
+                } finally {
+                    loader.style.display = 'none';
+                }
+            };
+
+            reader.onerror = function (error) {
+                console.error("File reader error:", error);
+                alert("Failed to read the file.");
+                loader.style.display = 'none';
+            };
+
+            reader.readAsArrayBuffer(file);
+        }
+
+        function calculateATSScore(resumeText, jobDescText) {
+            const resumeWords = resumeText.toLowerCase().replace(/[^a-z0-9\s+#-]/gi, '').split(/\s+/).filter(Boolean); // Allow #, + (e.g C++, C#)
+            const jobWords = jobDescText.toLowerCase().replace(/[^a-z0-9\s+#-]/gi, '').split(/\s+/).filter(Boolean);
+            
+            // More sophisticated keyword extraction for job description (e.g., consider phrases, n-grams later)
+            // For now, unique words longer than 2 letters, excluding common stop words could be an improvement.
+            const commonStopWords = new Set(['and','the','is','in','it','of','to','a','for','with','on','as','an','be','at','or','by','if','this','that','not']);
+            const uniqueJobWords = [...new Set(jobWords.filter(w => w.length > 2 && !commonStopWords.has(w)))]; 
+
+            const matchedKeywords = uniqueJobWords.filter(word => resumeWords.includes(word));
+            const missingKeywords = uniqueJobWords.filter(word => !resumeWords.includes(word));
+            const score = uniqueJobWords.length > 0 ? Math.min(100, Math.round((matchedKeywords.length / uniqueJobWords.length) * 100)) : 0;
+
+            document.getElementById("score-result").innerHTML = `<p><strong>ATS Compatibility Score: ${score}%</strong></p>`;
+
+            provideAISuggestions(missingKeywords, matchedKeywords, score);
+        }
+
+        function provideAISuggestions(missingKeywords, matchedKeywords, score) {
+            const aiSuggestionsDiv = document.getElementById("ai-suggestions");
+            let suggestionsHTML = `<p><strong>AI Suggestions:</strong></p>`;
+
+            if (score < 50 && missingKeywords.length > 5) {
+                 suggestionsHTML += `<p>Your resume has a lower match with the job description. Focus on incorporating key skills and experiences mentioned in the job posting.</p>`;
+            } else if (score < 75) {
+                 suggestionsHTML += `<p>Good start! To further improve, try to naturally weave in some of the missing keywords if they align with your experience.</p>`;
+            } else {
+                 suggestionsHTML += `<p>Looking good! Your resume shows a strong alignment with the job description.</p>`;
+            }
+
+
+            if (missingKeywords.length > 0) {
+                suggestionsHTML += `<p><strong>Consider adding these relevant keywords (if applicable to your experience):</strong><br><span style="color: #FACC15;">${missingKeywords.slice(0, 15).join(', ')}</span></p>`; // Show top 15 missing
+                 if (missingKeywords.length > 15) {
+                    suggestionsHTML += `<p><small>(${missingKeywords.length - 15} more missing keywords not shown)</small></p>`;
+                }
+            } else if (uniqueJobWords.length > 0) { 
+                suggestionsHTML += `<p>Excellent! Your resume appears to cover all the significant keywords from the job description.</p>`;
+            } else {
+                 suggestionsHTML += `<p>No specific keywords were extracted from the job description (it might be too short or general). Ensure your resume is tailored to the role's general requirements.</p>`;
+            }
+
+
+            if (matchedKeywords.length > 0) {
+                suggestionsHTML += `<p><strong>Keywords successfully matched from your resume:</strong><br><span style="color: #a0dda0;">${matchedKeywords.slice(0, 15).join(', ')}</span></p>`; // Show top 15 matched
+                if (matchedKeywords.length > 15) {
+                    suggestionsHTML += `<p><small>(${matchedKeywords.length - 15} more matched keywords not shown)</small></p>`;
+                }
+            }
+             aiSuggestionsDiv.innerHTML = suggestionsHTML;
+        }
+    </script>
+
+</body>
+</html>
